@@ -41,13 +41,20 @@ func main() {
 }
 
 func loadConfig() config {
-	port := getenv("PORT", "8000")
-	monolithURL := mustParseURL("MONOLITH_URL", "http://localhost:8080")
-	moviesServiceURL := mustParseURL("MOVIES_SERVICE_URL", "http://localhost:8081")
-	eventsServiceURL := mustParseURL("EVENTS_SERVICE_URL", "http://localhost:8082")
+	port := os.Getenv("PORT")
+	monolithRaw := os.Getenv("MONOLITH_URL")
+	moviesRaw := os.Getenv("MOVIES_SERVICE_URL")
+	eventsRaw := os.Getenv("EVENTS_SERVICE_URL")
 
-	gradualMigration := parseBool(getenv("GRADUAL_MIGRATION", "false"))
-	moviesPercent := parsePercent(getenv("MOVIES_MIGRATION_PERCENT", "0"))
+	monolithURL, _ := url.Parse(monolithRaw)
+	moviesServiceURL, _ := url.Parse(moviesRaw)
+	eventsServiceURL, _ := url.Parse(eventsRaw)
+
+	gradualMigration := os.Getenv("GRADUAL_MIGRATION") == "true"
+	moviesPercent := 0
+	if percentRaw := os.Getenv("MOVIES_MIGRATION_PERCENT"); percentRaw != "" {
+		moviesPercent, _ = strconv.Atoi(percentRaw)
+	}
 
 	return config{
 		port:                   port,
@@ -57,45 +64,6 @@ func loadConfig() config {
 		gradualMigration:       gradualMigration,
 		moviesMigrationPercent: moviesPercent,
 	}
-}
-
-func getenv(key, fallback string) string {
-	value := strings.TrimSpace(os.Getenv(key))
-	if value == "" {
-		return fallback
-	}
-	return value
-}
-
-func mustParseURL(envKey, fallback string) *url.URL {
-	value := getenv(envKey, fallback)
-	parsed, err := url.Parse(value)
-	if err != nil {
-		log.Fatalf("invalid %s: %v", envKey, err)
-	}
-	return parsed
-}
-
-func parseBool(value string) bool {
-	parsed, err := strconv.ParseBool(value)
-	if err != nil {
-		return false
-	}
-	return parsed
-}
-
-func parsePercent(value string) int {
-	percent, err := strconv.Atoi(strings.TrimSpace(value))
-	if err != nil {
-		return 0
-	}
-	if percent < 0 {
-		return 0
-	}
-	if percent > 100 {
-		return 100
-	}
-	return percent
 }
 
 func newReverseProxy(target *url.URL, name string) *httputil.ReverseProxy {
@@ -127,21 +95,11 @@ func chooseProxy(
 	case strings.HasPrefix(path, "/api/events"):
 		return eventsProxy
 	case strings.HasPrefix(path, "/api/movies"):
-		return moviesProxy
+		if cfg.gradualMigration && rng.Intn(100) < cfg.moviesMigrationPercent {
+			return moviesProxy
+		}
+		return monolithProxy
 	default:
 		return monolithProxy
 	}
-}
-
-func shouldRouteToMovies(cfg config, rng *rand.Rand) bool {
-	if !cfg.gradualMigration {
-		return false
-	}
-	if cfg.moviesMigrationPercent >= 100 {
-		return true
-	}
-	if cfg.moviesMigrationPercent <= 0 {
-		return false
-	}
-	return rng.Intn(100) < cfg.moviesMigrationPercent
 }
