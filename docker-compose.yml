@@ -19,6 +19,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - cinemaabyss-network
 
@@ -83,21 +84,21 @@ services:
       - cinemaabyss-network
 
   # Events Microservice
-  # events-service:
-  #   build:
-  #     context: ./src/microservices/events
-  #     dockerfile: Dockerfile
-  #   container_name: cinemaabyss-events-service
-  #   depends_on:
-  #     - postgres
-  #     - kafka
-  #   ports:
-  #     - "8082:8082"
-  #   environment:
-  #     PORT: 8082
-  #     KAFKA_BROKERS: kafka:9092
-  #   networks:
-  #     - cinemaabyss-network
+  events-service:
+    build:
+      context: ./src/microservices/events
+      dockerfile: Dockerfile
+    container_name: cinemaabyss-events-service
+    depends_on:
+      - postgres
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      KAFKA_BROKERS: kafka:9092
+    networks:
+      - cinemaabyss-network
 
   # Proxy Service (API Gateway)
   proxy-service:
@@ -108,7 +109,7 @@ services:
     depends_on:
       - monolith
       - movies-service
-      # - events-service
+      - events-service
     ports:
       - "8000:8000"
     environment:

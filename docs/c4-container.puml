@@ -1,0 +1,49 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' CinemaAbyss To-Be container diagram
+
+title CinemaAbyss - Container Diagram
+
+Person(user, "Viewer", "Uses CinemaAbyss")
+
+System_Boundary(c1, "CinemaAbyss") {
+  Container(api, "API Gateway", "Go", "Single entry point for all domains")
+
+  Boundary(d1, "Domain: Users") {
+    Container(users, "Users Service", "Go", "User profiles")
+  }
+
+  Boundary(d2, "Domain: Movies") {
+    Container(movies, "Movies Service", "Go", "Movies metadata")
+  }
+
+  Boundary(d3, "Domain: Payments") {
+    Container(payments, "Payments Service", "Go", "Payments")
+  }
+
+  Boundary(d4, "Domain: Subscriptions") {
+    Container(subscriptions, "Subscriptions Service", "Go", "Subscriptions")
+  }
+
+  Boundary(d5, "Domain: Events") {
+    Container(events, "Events Service", "Go", "Creates and consumes events")
+    Container(kafka, "Kafka", "Wurstmeister", "Event bus")
+  }
+
+  ContainerDb(postgres, "PostgreSQL", "PostgreSQL", "Shared relational database")
+}
+
+Rel(user, api, "Uses", "HTTP")
+Rel(api, users, "Routes", "HTTP")
+Rel(api, movies, "Routes", "HTTP")
+Rel(api, payments, "Routes", "HTTP")
+Rel(api, subscriptions, "Routes", "HTTP")
+Rel(api, events, "Routes", "HTTP")
+Rel(users, postgres, "Reads/Writes", "SQL")
+Rel(movies, postgres, "Reads/Writes", "SQL")
+Rel(payments, postgres, "Reads/Writes", "SQL")
+Rel(subscriptions, postgres, "Reads/Writes", "SQL")
+Rel(events, kafka, "Publishes/consumes", "Kafka")
+
+@enduml
