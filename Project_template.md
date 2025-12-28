@@ -205,7 +205,7 @@ cat .docker/config.json | base64
 
   4. Разверните Kafka:
   ```bash
-  kubectl apply -f src/kubernetes/kafka/kafka.yaml
+  
   ```
 
   Проверьте, теперь должно быть запущено 3 пода, если что-то не так, то посмотрите логи
@@ -282,6 +282,10 @@ cat .docker/config.json | base64
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
 
+- [Список фильмов](/docs/Img8.jpg)
+- [Вывод events-service](/docs/Img9.jpg)
+- [Тесты](/docs/Img10.jpg)
+- [Поды](/docs/Img11.jpg)
 
 # Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
