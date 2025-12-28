@@ -1,0 +1,10 @@
+foxy-gal@keraban-m2-air architecture-cinemaabyss % helm install cinemaabyss ./src/kubernetes/helm --namespace cinemaabyss --create-namespace
+NAME: cinemaabyss
+LAST DEPLOYED: Mon Dec 29 01:19:20 2025
+NAMESPACE: cinemaabyss
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+foxy-gal@keraban-m2-air architecture-cinemaabyss % helm list -n cinemaabyss
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+cinemaabyss     cinemaabyss     1               2025-12-29 01:19:20.005574 +0300 MSK    deployed        cinemaabyss-0.1.0       1.0.0      
