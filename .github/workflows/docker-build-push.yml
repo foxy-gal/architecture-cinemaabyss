@@ -31,22 +31,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Restore cached Docker images
-        id: cache-docker-images
-        uses: actions/cache@v3
-        with:
-          path: /tmp/docker-cache
-          key: ${{ runner.os }}-docker-cache-${{ hashFiles('docker-compose.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-cache-
-
-      - name: Load cached Docker images
-        if: steps.cache-docker-images.outputs.cache-hit == 'true'
-        run: |
-          if [ -f /tmp/docker-cache/images.tar ]; then
-            docker load -i /tmp/docker-cache/images.tar
-          fi
-
       - name: Pull service images
         run: docker compose pull
 
@@ -68,17 +52,6 @@ jobs:
       - name: Stop services
         if: always()
         run: docker compose down
-
-      - name: Save Docker images to cache
-        if: always()
-        run: |
-          mkdir -p /tmp/docker-cache
-          docker save \
-            postgres:14 \
-            wurstmeister/zookeeper:latest \
-            wurstmeister/kafka:2.13-2.7.0 \
-            provectuslabs/kafka-ui:latest \
-            -o /tmp/docker-cache/images.tar
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
