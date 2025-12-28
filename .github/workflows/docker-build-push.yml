@@ -35,6 +35,9 @@ jobs:
           docker compose up -d --build
           echo "Waiting for services to be ready..."
           sleep 120
+      
+      - name: Verify services are running
+        run: docker compose ps
 
       - name: Build API tests image
         working-directory: tests/postman
@@ -42,7 +45,7 @@ jobs:
 
       - name: Run API tests
         working-directory: tests/postman
-        run: docker run --network=cinemaabyss-network -v "${{ github.workspace }}/tests/postman/reports:/app/reports" cinemaabyss-api-tests
+        run: docker run --network=cinemaabyss-network -v "${{ github.workspace }}/tests/postman/reports:/app/reports" cinemaabyss-api-tests --reporters cli,junit
 
       - name: Stop services
         if: always()
